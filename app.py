@@ -44,3 +44,4 @@ def home():
     return render_template(
         "index.html",
         verilog_code=verilog_co
+    )
