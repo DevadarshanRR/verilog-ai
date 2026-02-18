@@ -1,27 +1,41 @@
+from flask import Flask, render_template, request
 from groq import Groq
 import os
 
-client = Groq()
+app = Flask(__name__)
 
-def generate_verilog(description):
-    prompt = f"""
+# Get API key from environment variable
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+@app.route("/", methods=["GET", "POST"])
+def home():
+    verilog_code = ""
+
+    if request.method == "POST":
+        description = request.form["description"]
+
+        prompt = f"""
 You are an expert RTL hardware design engineer.
-Generate synthesizable Verilog code only.
+Generate synthesizable Verilog-2001 code only.
 
 Specification:
 {description}
 """
 
-    response = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.2
-    )
+        response = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.2
+        )
 
-    return response.choices[0].message.content
+        verilog_code = response.choices[0].message.content
+
+        # Clean formatting
+        if "```" in verilog_code:
+            verilog_code = verilog_code.split("```")[1]
+
+    return render_template("index.html", verilog_code=verilog_code)
 
 
 if __name__ == "__main__":
-    user_input = input("Enter hardware specification: ")
-    result = generate_verilog(user_input)
-    print(result)
+    app.run(debug=True)
