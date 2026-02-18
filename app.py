@@ -1,47 +1,31 @@
+import streamlit as st
 import os
-from flask import Flask, render_template, request
 from groq import Groq
 
-app = Flask(__name__)
+st.set_page_config(page_title="AI RTL Assistant", layout="wide")
 
-# Get API key from environment variable
+st.title("🧠 AI RTL Design Assistant")
+st.markdown("Generate Verilog, Testbench, and Explanation from natural language.")
+
 api_key = os.getenv("GROQ_API_KEY")
 
 if not api_key:
-    raise ValueError("GROQ_API_KEY not set in environment variables.")
+    st.error("GROQ_API_KEY not found.")
+    st.stop()
 
 client = Groq(api_key=api_key)
 
+prompt = st.text_area("Enter Hardware Specification")
 
-def generate_verilog(description):
-    response = client.chat.completions.create(
-        model="llama3-8b-8192",
-        messages=[
-            {"role": "system", "content": "You are a Verilog HDL expert. Generate clean synthesizable Verilog code only."},
-            {"role": "user", "content": description}
-        ]
-    )
+if st.button("Generate"):
 
-    return response.choices[0].message.content
+    if not prompt.strip():
+        st.warning("Please enter a hardware description.")
+    else:
+        with st.spinner("Generating..."):
 
-
-@app.route("/", methods=["GET", "POST"])
-def home():
-    verilog_code = ""
-    error_message = ""
-
-    if request.method == "POST":
-        description = request.form.get("description")
-
-        if description:
-            try:
-                verilog_code = generate_verilog(description)
-            except Exception as e:
-                error_message = str(e)
-        else:
-            error_message = "Please enter a hardware specification."
-
-    return render_template(
-        "index.html",
-        verilog_code=verilog_co
-    )
+            system_prompt = """
+            You are an expert RTL engineer.
+            For the given hardware description:
+            1. Generate clean synthesizable Verilog.
+            2. Generate a pr
