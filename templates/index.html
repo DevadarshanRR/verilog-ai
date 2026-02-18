@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Verilog Generator</title>
+</head>
+<body>
+    <h1>AI Verilog Code Generator</h1>
+
+    <form method="POST">
+        <textarea name="description" rows="6" cols="60"
+        placeholder="Enter hardware specification"></textarea><br><br>
+        <button type="submit">Generate</button>
+    </form>
+
+    {% if verilog_code %}
+        <h2>Generated Verilog:</h2>
+        <pre>{{ verilog_code }}</pre>
+    {% endif %}
+</body>
+</html>
