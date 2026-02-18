@@ -1,0 +1,27 @@
+from groq import Groq
+import os
+
+client = Groq()
+
+def generate_verilog(description):
+    prompt = f"""
+You are an expert RTL hardware design engineer.
+Generate synthesizable Verilog code only.
+
+Specification:
+{description}
+"""
+
+    response = client.chat.completions.create(
+        model="llama-3.1-8b-instant",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.2
+    )
+
+    return response.choices[0].message.content
+
+
+if __name__ == "__main__":
+    user_input = input("Enter hardware specification: ")
+    result = generate_verilog(user_input)
+    print(result)
