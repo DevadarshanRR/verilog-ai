@@ -9,4 +9,3 @@ Design a 4-bit synchronous counter with reset
 
 Output:
 module sync_counter_4bit...
-Live Demo: https://verilog-ai-eyoqhnpqqmlbbmcbsxquy.streamlit.app
