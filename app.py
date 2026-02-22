@@ -1,13 +1,13 @@
 import streamlit as st
 from groq import Groq
 
-# Page configuration
+# ---------------- Page Configuration ----------------
 st.set_page_config(
-    page_title="LogiXForge",
+    page_title="logX",
     layout="wide"
 )
 
-# Custom Dark RTL Engineering Theme
+# ---------------- Dark Theme Styling ----------------
 st.markdown("""
 <style>
 body {
@@ -18,15 +18,22 @@ body {
 .stTextArea textarea {
     background-color: #161b22;
     color: #e6edf3;
-    border-radius: 8px;
+    border-radius: 12px;
+    border: 1px solid #30363d;
 }
 
 .stButton button {
     background-color: #238636;
     color: white;
-    border-radius: 8px;
-    height: 45px;
-    font-weight: bold;
+    border-radius: 25px;
+    height: 48px;
+    width: 100%;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.stButton button:hover {
+    background-color: #2ea043;
 }
 
 .sidebar .sidebar-content {
@@ -39,22 +46,32 @@ code {
 </style>
 """, unsafe_allow_html=True)
 
-st.title("LogiXForge")
-st.caption("Advanced AI RTL Design Assistant")
+# ---------------- Title ----------------
+st.title("logX")
+st.caption("AI RTL Design Assistant")
 
-# Sidebar controls
+# ---------------- API Setup ----------------
+api_key = st.secrets["GROQ_API_KEY"]
+client = Groq(api_key=api_key)
+
+# ---------------- Load Available Models ----------------
+try:
+    model_list = client.models.list()
+    available_models = sorted([model.id for model in model_list.data])
+except:
+    available_models = ["llama-3.1-8b-instant"]
+
+# ---------------- Sidebar ----------------
 with st.sidebar:
-    st.header("Model Configuration")
+    st.header("Configuration")
 
     model_choice = st.selectbox(
         "Select Model",
-        [
-            "llama-3.1-8b-instant"
-        ]
+        available_models
     )
 
     temperature = st.slider(
-        "Creativity Level",
+        "Creativity",
         0.0,
         1.0,
         0.2,
@@ -62,23 +79,19 @@ with st.sidebar:
     )
 
     st.markdown("---")
-    st.write("Generate synthesizable Verilog designs from natural language specifications.")
+    st.write("Natural Language → Synthesizable Verilog")
 
-# API Key
-api_key = st.secrets["GROQ_API_KEY"]
-client = Groq(api_key=api_key)
-
-# Chat-style prompt input
+# ---------------- User Input ----------------
 user_prompt = st.text_area(
     "Describe your hardware design",
     placeholder="Example: Design a pipelined 8-bit ALU with carry and overflow detection."
 )
 
-# Generate button
-if st.button("Generate RTL Design"):
+# ---------------- Generate Button ----------------
+if st.button("➜ Generate"):
 
     if not user_prompt.strip():
-        st.warning("Please enter a hardware specification.")
+        st.warning("Enter a hardware specification.")
     else:
         try:
             with st.spinner("Synthesizing logic..."):
@@ -91,9 +104,9 @@ if st.button("Generate RTL Design"):
                             "content": """
 You are a professional RTL engineer.
 
-1. First output clean, synthesizable Verilog code only.
-2. After the code, write a section titled EXPLANATION.
-3. In EXPLANATION, briefly describe architecture, signals, and working.
+1. First output clean synthesizable Verilog code only.
+2. Then write a section titled EXPLANATION.
+3. In EXPLANATION, briefly explain architecture and working.
 """
                         },
                         {
@@ -116,15 +129,15 @@ You are a professional RTL engineer.
                     code_part = output
                     explanation_part = "Explanation not generated."
 
-                # Tabs
-                tab1, tab2 = st.tabs(["Verilog Code", "Design Explanation"])
+                # ---------------- Tabs ----------------
+                tab1, tab2 = st.tabs(["Verilog Code", "Explanation"])
 
                 with tab1:
                     st.code(code_part.strip(), language="verilog")
                     st.download_button(
-                        label="Download Verilog File",
+                        label="Download .v file",
                         data=code_part.strip(),
-                        file_name="logixforge_design.v",
+                        file_name="logX_design.v",
                         mime="text/plain"
                     )
 
