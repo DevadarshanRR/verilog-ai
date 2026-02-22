@@ -1,94 +1,34 @@
 import streamlit as st
-import os
 from groq import Groq
+import os
 
-st.set_page_config(page_title="AI RTL Design Assistant", layout="wide")
+st.set_page_config(page_title="AI RTL Assistant", layout="wide")
 
 st.title("AI RTL Design Assistant")
-st.markdown("Natural Language to Verilog, Testbench and Explanation")
 
-# Sidebar configuration
-st.sidebar.header("Configuration")
-
-model_choice = st.sidebar.selectbox(
-    "Model",
-    ["llama3-8b-8192"]
-)
-
-temperature = st.sidebar.slider("Creativity Level", 0.0, 1.0, 0.3)
-
-optimization_mode = st.sidebar.selectbox(
-    "Optimization Mode",
-    ["Balanced", "Area Optimized", "Speed Optimized", "Power Optimized"]
-)
-
-api_key = os.getenv("GROQ_API_KEY")
-
-if not api_key:
-    st.error("GROQ_API_KEY is not set.")
-    st.stop()
+api_key = st.secrets["GROQ_API_KEY"]
 
 client = Groq(api_key=api_key)
 
-user_prompt = st.text_area("Enter Hardware Specification", height=150)
+prompt = st.text_area("Enter Hardware Specification")
 
 if st.button("Generate"):
 
-    if not user_prompt.strip():
-        st.warning("Please enter a hardware specification.")
+    if not prompt.strip():
+        st.warning("Please enter a description.")
     else:
-        with st.spinner("Generating RTL..."):
-
-            system_prompt = f"""
-You are a professional RTL design engineer.
-
-Optimization mode: {optimization_mode}
-
-For the given hardware specification:
-1. Generate clean synthesizable Verilog.
-2. Generate a proper testbench.
-3. Provide a simple explanation.
-4. Mention approximate flip-flop usage.
-
-Format output under:
-### Verilog
-### Testbench
-### Explanation
-"""
+        with st.spinner("Generating..."):
 
             response = client.chat.completions.create(
-                model=model_choice,
+                model="llama3-8b-8192",
                 messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt}
+                    {"role": "system", "content": "You generate clean synthesizable Verilog code only."},
+                    {"role": "user", "content": prompt}
                 ],
-                temperature=temperature
+                temperature=0.2,
+                max_tokens=1024
             )
 
             result = response.choices[0].message.content
 
-            sections = result.split("###")
-
-            verilog = ""
-            testbench = ""
-            explanation = ""
-
-            for section in sections:
-                if "Verilog" in section:
-                    verilog = section
-                elif "Testbench" in section:
-                    testbench = section
-                elif "Explanation" in section:
-                    explanation = section
-
-            tab1, tab2, tab3 = st.tabs(["Verilog", "Testbench", "Explanation"])
-
-            with tab1:
-                st.code(verilog, language="verilog")
-                st.download_button("Download Verilog File", verilog, file_name="design.v")
-
-            with tab2:
-                st.code(testbench, language="verilog")
-
-            with tab3:
-                st.write(explanation)
+            st.code(result, language="verilog")
