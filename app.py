@@ -152,7 +152,7 @@ Output format:
                             "content": user_prompt
                         }
                     ],
-                    temperature=temperature,
+                    temperature=0.1,
                     max_tokens=2000
                 )
 
