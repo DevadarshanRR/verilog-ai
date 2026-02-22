@@ -52,20 +52,19 @@ st.caption("AI RTL Design Assistant")
 api_key = st.secrets["GROQ_API_KEY"]
 client = Groq(api_key=api_key)
 
-# ---------------- Load Available Models ----------------
-try:
-    model_list = client.models.list()
-    available_models = sorted([model.id for model in model_list.data])
-except:
-    available_models = ["llama-3.1-8b-instant"]
-
+# ---------------- Available Models ----------------
+available_models = [
+    "llama-3.1-8b-instant",
+    "llama-3.1-70b-versatile",
+    "mixtral-8x7b-32768",
+    "gemma2-9b-it",
+    "openai/gpt-oss-120b"
+]
 # ---------------- Sidebar ----------------
 with st.sidebar:
     st.header("Configuration")
 
-    model_choice = st.selectbox(
-        "Select Model",
-        available_models
+    model_choice = st.selectbox("Select Model", available_models)
     )
 
     temperature = st.slider(
