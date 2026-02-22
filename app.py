@@ -1,13 +1,10 @@
 import streamlit as st
 from groq import Groq
 
-# ---------------- Page Configuration ----------------
-st.set_page_config(
-    page_title="logX",
-    layout="wide"
-)
+# ---------------- Page Config ----------------
+st.set_page_config(page_title="logX", layout="wide")
 
-# ---------------- Dark Theme Styling ----------------
+# ---------------- Custom Dark Theme ----------------
 st.markdown("""
 <style>
 body {
@@ -15,33 +12,34 @@ body {
     color: #e6edf3;
 }
 
+/* Text Area Styling */
 .stTextArea textarea {
     background-color: #161b22;
     color: #e6edf3;
     border-radius: 12px;
     border: 1px solid #30363d;
+    padding: 15px;
 }
 
-.stButton button {
+/* Circular Arrow Button */
+div.stButton > button {
     background-color: #238636;
     color: white;
-    border-radius: 25px;
-    height: 48px;
-    width: 100%;
-    font-size: 16px;
-    font-weight: 600;
+    border-radius: 50%;
+    height: 50px;
+    width: 50px;
+    font-size: 20px;
+    font-weight: bold;
+    border: none;
 }
 
-.stButton button:hover {
+div.stButton > button:hover {
     background-color: #2ea043;
 }
 
-.sidebar .sidebar-content {
+/* Sidebar background */
+section[data-testid="stSidebar"] {
     background-color: #111827;
-}
-
-code {
-    font-size: 14px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -81,14 +79,21 @@ with st.sidebar:
     st.markdown("---")
     st.write("Natural Language → Synthesizable Verilog")
 
-# ---------------- User Input ----------------
-user_prompt = st.text_area(
-    "Describe your hardware design",
-    placeholder="Example: Design a pipelined 8-bit ALU with carry and overflow detection."
-)
+# ---------------- Chat Input Layout ----------------
+col1, col2 = st.columns([10, 1])
 
-# ---------------- Generate Button ----------------
-if st.button("➜ Generate"):
+with col1:
+    user_prompt = st.text_area(
+        "",
+        placeholder="Design a 3-stage pipeline MIPS processor.",
+        label_visibility="collapsed"
+    )
+
+with col2:
+    send_clicked = st.button("⬆")
+
+# ---------------- Generate Logic ----------------
+if send_clicked:
 
     if not user_prompt.strip():
         st.warning("Enter a hardware specification.")
@@ -106,7 +111,7 @@ You are a professional RTL engineer.
 
 1. First output clean synthesizable Verilog code only.
 2. Then write a section titled EXPLANATION.
-3. In EXPLANATION, briefly explain architecture and working.
+3. In EXPLANATION, briefly describe architecture and working.
 """
                         },
                         {
@@ -129,7 +134,7 @@ You are a professional RTL engineer.
                     code_part = output
                     explanation_part = "Explanation not generated."
 
-                # ---------------- Tabs ----------------
+                # Tabs
                 tab1, tab2 = st.tabs(["Verilog Code", "Explanation"])
 
                 with tab1:
