@@ -65,7 +65,7 @@ with st.sidebar:
     st.header("Configuration")
 
     model_choice = st.selectbox("Select Model", available_models)
-    )
+    
 
     temperature = st.slider(
         "Creativity",
